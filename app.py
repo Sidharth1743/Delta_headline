@@ -48,6 +48,8 @@ def index():
 
 @app.route('/process', methods=['POST'])
 def process():
+
+    print(request)
     """Process uploaded newspaper image"""
     start_time = time.time()
     logger.info("Starting image processing request")
@@ -88,18 +90,25 @@ def process():
             summarized_text = summarize_text(extracted_text)
             stage_times['summarize'] = time.time() - stage_start
             logger.info(f"Summarization completed in {stage_times['summarize']:.2f} seconds")
-            
+
+
+            language = request.form.get("lang_selection")
+            print(language)
             # Generate news report
             logger.info("Starting news report generation")
             stage_start = time.time()
-            news_report = generate_report(summarized_text)
+            news_report = generate_report(summarized_text , language)
             stage_times['report'] = time.time() - stage_start
             logger.info(f"Report generation completed in {stage_times['report']:.2f} seconds")
+            
+            # Get voice parameter from request (default to 'bm_fable')
+            voice = request.form.get('voice_selection')
+            print(voice)
             
             # Convert to speech
             logger.info("Starting text-to-speech conversion")
             stage_start = time.time()
-            audio_filename = text_to_speech(news_report, app.config['AUDIO_FOLDER'])
+            audio_filename = text_to_speech(news_report, app.config['AUDIO_FOLDER'], voice=voice)
             stage_times['tts'] = time.time() - stage_start
             logger.info(f"TTS completed in {stage_times['tts']:.2f} seconds")
             
@@ -132,7 +141,7 @@ def process():
             'error': f"Processing failed: {str(e)}",
             'status': 'error'
         }), 500
-
+    
 @app.route('/audio/<filename>')
 def audio(filename):
     """Serve audio files"""

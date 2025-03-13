@@ -16,7 +16,7 @@ def split_into_sentences(text):
     sentences = re.split(r'(?<=[.!?])\s+', text)
     return [s for s in sentences if s.strip()]
 
-def text_to_speech(text, output_folder, voice='bm_fable'):
+def text_to_speech(text, output_folder, voice='ef_dora'):
     """
     Convert text to speech using Kokoro TTS
     Returns the filename of the generated audio
@@ -38,7 +38,7 @@ def text_to_speech(text, output_folder, voice='bm_fable'):
             # Generate audio for this sentence
             generator = pipeline(
                 sentence, 
-                voice=voice,  # Use broadcaster male voice
+                voice=voice,  # Use the specified voice
                 speed=1.0     # Normal speed
             )
             

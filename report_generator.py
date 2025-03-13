@@ -1,13 +1,13 @@
 import ollama
 
-def generate_report(summarized_text):
+def generate_report(summarized_text,language):
     """
     Format the summarized text as a professional news report
     using prompt engineering.
     """
     try:
         # Define the prompt for better structured news reports
-        prompt = f"""Transform the following summary into a professional news broadcast script.
+        prompt = f"""Transform the following summary into a professional news broadcast script and give the output in {language}.
 
 Guidelines:
 - A compelling headline
@@ -28,6 +28,7 @@ News report:"""
         # Extract and return the generated report
         report = response["message"]["content"]
         return report
+        print(report)
 
     except Exception as e:
         print(f"Error in report generation: {e}")

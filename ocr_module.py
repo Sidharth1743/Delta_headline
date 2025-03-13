@@ -45,6 +45,8 @@ def extract_text_from_image(image_path):
 
         return extracted_text
 
+        print(extracted_text)
+
     except Exception as e:
         print(f"Error extracting text: {e}")
         import traceback

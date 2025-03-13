@@ -28,6 +28,7 @@ def summarize_text(text, max_length=150):
         summary = response["message"]["content"]
 
         return summary
+        print(summary)
 
     except Exception as e:
         print(f"Error in summarization: {e}")
