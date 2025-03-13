@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delta Headlines - News OCR & Broadcaster</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .container {
+            max-width: 800px;
+        }
+        #preview {
+            max-width: 100%;
+            max-height: 300px;
+            display: none;
+        }
+        .results-section {
+            display: none;
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .tab-content {
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 0.25rem 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">Delta Headlines - News Broadcaster</span>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Upload Newspaper Image</h5>
+            </div>
+            <div class="card-body">
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Select newspaper image:</label>
+                        <input class="form-control" type="file" id="file" name="file" accept="image/*">
+                    </div>
+                    <div class="mb-3">
+                        <img id="preview" class="img-fluid" src="#" alt="Preview">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Process Image</button>
+                </form>
+                <div class="loader" id="loader"></div>
+            </div>
+        </div>
+
+        <div class="results-section" id="results-section">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">News Report Results</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs" id="resultTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="report-tab" data-bs-toggle="tab" data-bs-target="#report" type="button" role="tab">News Report</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary" type="button" role="tab">Summary</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="original-tab" data-bs-toggle="tab" data-bs-target="#original" type="button" role="tab">Original Text</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="resultTabsContent">
+                        <div class="tab-pane fade show active" id="report" role="tabpanel">
+                            <h4>News Broadcast</h4>
+                            <div id="news-report" class="border p-3 rounded mb-3 bg-light"></div>
+                            <div id="audio-player-container" class="mt-3">
+                                <h5>Audio Broadcast</h5>
+                                <audio id="audio-player" controls class="w-100"></audio>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="summary" role="tabpanel">
+                            <h4>Summarized Content</h4>
+                            <div id="summarized-text" class="border p-3 rounded bg-light"></div>
+                        </div>
+                        <div class="tab-pane fade" id="original" role="tabpanel">
+                            <h4>Extracted Text</h4>
+                            <div id="original-text" class="border p-3 rounded bg-light"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Preview image before upload
+        document.getElementById('file').addEventListener('change', function(event) {
+            const preview = document.getElementById('preview');
+            preview.src = URL.createObjectURL(event.target.files[0]);
+            preview.style.display = 'block';
+        });
+
+        // Form submission
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(this);
+            const loader = document.getElementById('loader');
+            const resultsSection = document.getElementById('results-section');
+            
+            // Show loader
+            loader.style.display = 'block';
+            
+            // Hide results (if previously shown)
+            resultsSection.style.display = 'none';
+            
+            // Send the file to the server
+            fetch('/process', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loader
+                loader.style.display = 'none';
+                
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+                
+                // Show results
+                resultsSection.style.display = 'block';
+                
+                // Populate results
+                document.getElementById('original-text').innerText = data.original_text;
+                document.getElementById('summarized-text').innerText = data.summarized_text;
+                document.getElementById('news-report').innerText = data.news_report;
+                
+                // Set audio source
+                const audioPlayer = document.getElementById('audio-player');
+                audioPlayer.src = data.audio_file;
+                audioPlayer.load();
+            })
+            .catch(error => {
+                loader.style.display = 'none';
+                alert('Error: ' + error);
+            });
+        });
+    </script>
+</body>
+</html>
